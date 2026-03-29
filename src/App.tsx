@@ -193,7 +193,7 @@ export default function App() {
   const chatSession = useMemo(() => {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     return ai.chats.create({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.0-flash",
       config: {
         systemInstruction: `
           You are "Travel Buddy", a friendly and professional travel assistant for VisaNavigator.
@@ -313,7 +313,7 @@ export default function App() {
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.0-flash",
         contents: prompt,
         config: { 
           responseMimeType: "application/json",
@@ -380,17 +380,81 @@ export default function App() {
       if (evisa.includes(dest.code)) return { status: "e-Visa", description: "Apply online" };
     }
 
-    // 3. General Region-based Logic
-    if (nationality.region === dest.region) {
-      if (nationality.region === "Europe") return { status: "Visa Free", description: "Likely Schengen/EU freedom" };
-      if (nationality.region === "Americas") return { status: "Visa Free", description: "Likely Mercosur/Visa-free" };
+    // 3. Accurate data for US passport
+    if (nationality.code === "US") {
+      const visaFree = ["AL","AD","AT","BE","BA","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IS","IE","IT","LV","LI","LT","LU","MT","MC","ME","NL","MK","NO","PL","PT","RO","SM","RS","SK","SI","ES","SE","CH","GB","CA","MX","JP","KR","SG","MY","TH","IL","AE","QA","AR","BR","CL","CO","PE","UY","ZA","MA","TN","GH","JM","BB","BS","TT","CR","PA","GT","HN","NI","GE","KZ","UZ","ID","PH"];
+      const voa = ["BH","JO","RW","MV","ET","MZ","MG","SL","SO","KM","GW","TV","TD","ST","BI","LA"];
+      const evisa = ["AU","NZ","KE","TZ","UG","EG","TR","AZ","VN","KH","LK","IN"];
+      if (visaFree.includes(dest.code)) return { status: "Visa Free", description: "No visa required" };
+      if (voa.includes(dest.code)) return { status: "Visa on Arrival", description: "Obtain visa at port of entry" };
+      if (evisa.includes(dest.code)) return { status: "e-Visa", description: "Apply online before travel" };
+      const visaRequired = ["CN","RU","NG","PK","BD","AF","IQ","IR","SY","LY","SD","CU","KP","BY"];
+      if (visaRequired.includes(dest.code)) return { status: "Visa Required", description: "Visa required in advance" };
     }
 
-    // 4. Deterministic fallback (for variety in the grid)
-    const charSum = dest.code.charCodeAt(0) + dest.code.charCodeAt(1) + nationality.code.charCodeAt(0);
-    if (charSum % 11 === 0) return { status: "Visa on Arrival", description: "Likely available at airport" };
-    if (charSum % 13 === 0) return { status: "e-Visa", description: "Likely available online" };
-    
+    // 4. Accurate data for UK passport
+    if (nationality.code === "GB") {
+      const visaFree = ["AL","AD","AT","BE","BA","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IS","IE","IT","LV","LI","LT","LU","MT","MC","ME","NL","MK","NO","PL","PT","RO","SM","RS","SK","SI","ES","SE","CH","CA","MX","NZ","JP","KR","SG","MY","TH","IL","AE","QA","AR","BR","CL","CO","PE","UY","ZA","MA","GH","JM","BB","TT","GE","US","ID","PH","KZ"];
+      const voa = ["BH","JO","RW","MV","ET","LA","MZ","MG","SL","SO"];
+      const evisa = ["AU","KE","TZ","UG","EG","TR","AZ","VN","KH","LK","IN"];
+      if (visaFree.includes(dest.code)) return { status: "Visa Free", description: "No visa required" };
+      if (voa.includes(dest.code)) return { status: "Visa on Arrival", description: "Obtain visa at port of entry" };
+      if (evisa.includes(dest.code)) return { status: "e-Visa", description: "Apply online before travel" };
+      const visaRequired = ["CN","RU","NG","PK","BD","AF","IQ","IR","SY","CU","KP","BY"];
+      if (visaRequired.includes(dest.code)) return { status: "Visa Required", description: "Visa required in advance" };
+    }
+
+    // 5. Accurate data for Nigeria passport
+    if (nationality.code === "NG") {
+      const visaFree = ["BJ","BF","CV","GM","GH","GN","GW","LR","ML","MR","NE","SL","SN","TG","MA","TN","MU","SC","JM","BB","TT","HT"];
+      const voa = ["CM","GA","KE","RW","UG","MG","MZ","ZM","ET","SO","TD","ST","KM","MV","TV","BI"];
+      const evisa = ["TZ","EG","ZW","TR","UG","KE"];
+      if (visaFree.includes(dest.code)) return { status: "Visa Free", description: "No visa required" };
+      if (voa.includes(dest.code)) return { status: "Visa on Arrival", description: "Obtain visa at port of entry" };
+      if (evisa.includes(dest.code)) return { status: "e-Visa", description: "Apply online before travel" };
+      return { status: "Visa Required", description: "Click to verify requirements" };
+    }
+
+    // 6. Accurate data for Pakistan passport
+    if (nationality.code === "PK") {
+      const visaFree = ["MA","TN","TJ"];
+      const voa = ["MV","NP","JO","RW","ET","MG","MZ","SO","TV","KM","ST","TD","BI","KZ"];
+      const evisa = ["TR","AZ","GE","EG","KE","TZ","UG","ZW","LK","KH"];
+      if (visaFree.includes(dest.code)) return { status: "Visa Free", description: "No visa required" };
+      if (voa.includes(dest.code)) return { status: "Visa on Arrival", description: "Obtain visa at port of entry" };
+      if (evisa.includes(dest.code)) return { status: "e-Visa", description: "Apply online before travel" };
+      return { status: "Visa Required", description: "Click to verify requirements" };
+    }
+
+    // 7. Accurate data for Brazil passport
+    if (nationality.code === "BR") {
+      const visaFree = ["AR","BO","CL","CO","EC","PY","PE","UY","VE","GY","SR","MX","PA","CR","GT","HN","NI","SV","DO","CU","JM","BB","TT","BS","PT","FR","DE","IT","ES","AT","BE","DK","FI","GR","IE","LU","NL","NO","PL","SE","CH","GB","JP","KR","SG","MY","TH","ID","IL","MA","TN","ZA","AE","QA","TR"];
+      const voa = ["MV","JO","ET","RW","MG","MZ","BI","TV","KM","SO"];
+      const evisa = ["AU","NZ","EG","KE","TZ","UG","IN","LK","VN","KH","GE","AZ"];
+      if (visaFree.includes(dest.code)) return { status: "Visa Free", description: "No visa required" };
+      if (voa.includes(dest.code)) return { status: "Visa on Arrival", description: "Obtain visa at port of entry" };
+      if (evisa.includes(dest.code)) return { status: "e-Visa", description: "Apply online before travel" };
+      const visaRequired = ["US","CA","CN","RU","NG","PK","BD","AF","IR","IQ","SY","BY","KP","SA","KW"];
+      if (visaRequired.includes(dest.code)) return { status: "Visa Required", description: "Visa required in advance" };
+    }
+
+    // 8. Accurate data for Philippines passport
+    if (nationality.code === "PH") {
+      const visaFree = ["BR","SG","MY","ID","TH","VN","KH","LA","MM","BN","MA","TN","MU","FJ","JM","BB","TT","HT"];
+      const voa = ["MV","JO","BI","TV","KM","SO","MG"];
+      const evisa = ["TR","EG","KE","TZ","UG","RW","IN","LK","AZ","GE"];
+      if (visaFree.includes(dest.code)) return { status: "Visa Free", description: "No visa required" };
+      if (voa.includes(dest.code)) return { status: "Visa on Arrival", description: "Obtain visa at port of entry" };
+      if (evisa.includes(dest.code)) return { status: "e-Visa", description: "Apply online before travel" };
+      return { status: "Visa Required", description: "Click to verify requirements" };
+    }
+
+    // 9. General Region-based Logic for other passports
+    if (nationality.region === dest.region) {
+      if (nationality.region === "Europe") return { status: "Visa Free", description: "Schengen/EU free movement" };
+      if (nationality.region === "Americas") return { status: "Visa Free", description: "Regional visa-free access" };
+    }
+
     return { status: "Visa Required", description: "Click to verify requirements" };
   };
 
