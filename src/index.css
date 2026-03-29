@@ -56,4 +56,6 @@
 .markdown-content strong { @apply font-bold; }
 .markdown-content em { @apply italic; }
 .markdown-content blockquote { @apply border-l-4 border-gray-300 pl-4 italic mb-2; }
+.markdown-content a { @apply text-blue-600 underline hover:text-blue-800; }
+.markdown-content a:hover { @apply text-blue-800; }
 .markdown-content code { @apply bg-gray-100 rounded px-1 font-mono text-xs; }

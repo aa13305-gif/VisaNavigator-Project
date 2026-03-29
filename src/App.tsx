@@ -193,7 +193,7 @@ export default function App() {
   const chatSession = useMemo(() => {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     return ai.chats.create({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       config: {
         systemInstruction: `
           You are "Travel Buddy", a friendly and professional travel assistant for VisaNavigator.
@@ -313,7 +313,7 @@ export default function App() {
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: { 
           responseMimeType: "application/json",
@@ -1110,7 +1110,20 @@ export default function App() {
                       msg.text
                     ) : (
                       <div className="markdown-content">
-                        <ReactMarkdown>{msg.text}</ReactMarkdown>
+                        <ReactMarkdown
+                          components={{
+                            a: ({ href, children }) => (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline hover:text-blue-800"
+                              >
+                                {children}
+                              </a>
+                            )
+                          }}
+                        >{msg.text}</ReactMarkdown>
                       </div>
                     )}
                   </motion.div>
